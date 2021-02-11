@@ -160,19 +160,47 @@ void initGraphics()
 	// create three vertices using the CUSTOMVERTEX struct
 	CUSTOMVERTEX vertices[] =
 	{
-		{ -3.0f, 3.0f, -3.0f, D3DCOLOR_XRGB(0, 0, 255), },
-		{ 3.0f, 3.0f, -3.0f, D3DCOLOR_XRGB(0, 255, 0), },
-		{ -3.0f, -3.0f, -3.0f, D3DCOLOR_XRGB(255, 0, 0), },
-		{ 3.0f, -3.0f, -3.0f, D3DCOLOR_XRGB(0, 255, 255), },
-		{ -3.0f, 3.0f, 3.0f, D3DCOLOR_XRGB(0, 0, 255), },
-		{ 3.0f, 3.0f, 3.0f, D3DCOLOR_XRGB(255, 0, 0), },
-		{ -3.0f, -3.0f, 3.0f, D3DCOLOR_XRGB(0, 255, 0), },
-		{ 3.0f, -3.0f, 3.0f, D3DCOLOR_XRGB(0, 255, 255), }
+		// cube
+		//{ -3.0f, 3.0f, -3.0f, D3DCOLOR_XRGB(0, 0, 255), },
+		//{ 3.0f, 3.0f, -3.0f, D3DCOLOR_XRGB(0, 255, 0), },
+		//{ -3.0f, -3.0f, -3.0f, D3DCOLOR_XRGB(255, 0, 0), },
+		//{ 3.0f, -3.0f, -3.0f, D3DCOLOR_XRGB(0, 255, 255), },
+		//{ -3.0f, 3.0f, 3.0f, D3DCOLOR_XRGB(0, 0, 255), },
+		//{ 3.0f, 3.0f, 3.0f, D3DCOLOR_XRGB(255, 0, 0), },
+		//{ -3.0f, -3.0f, 3.0f, D3DCOLOR_XRGB(0, 255, 0), },
+		//{ 3.0f, -3.0f, 3.0f, D3DCOLOR_XRGB(0, 255, 255), }
+
+		// pyramid
+		// base
+		//{ -3.0f, 0.0f, 3.0f, D3DCOLOR_XRGB(0, 255, 0), },
+		//{ 3.0f, 0.0f, 3.0f, D3DCOLOR_XRGB(0, 0, 255), },
+		//{ -3.0f, 0.0f, -3.0f, D3DCOLOR_XRGB(255, 0, 0), },
+		//{ 3.0f, 0.0f, -3.0f, D3DCOLOR_XRGB(0, 255, 255), },
+
+		//// top point
+		//{ 0.0f, 7.0f, 0.0f, D3DCOLOR_XRGB(0, 255, 0), }
+
+		// Ship thing model
+		// body
+		{ 3.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(0, 255, 0) },	
+		{ 0.0f, 3.0f, -3.0f, D3DCOLOR_XRGB(0, 0, 255) },
+		{ 0.0f, 0.0f, 10.0f, D3DCOLOR_XRGB(255, 0, 0) },	
+		{ -3.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(0, 255, 255) },
+
+		// left gun
+		{ 3.2f, -1.0f, -3.0f, D3DCOLOR_XRGB(0, 0, 255) },
+		{ 3.2f, -1.0f, 11.0f, D3DCOLOR_XRGB(0, 255, 0) },
+		{ 2.0f, 1.0f, 2.0f, D3DCOLOR_XRGB(255, 0, 0) },
+
+		// right gun
+		{ -3.2f, -1.0f, -3.0f, D3DCOLOR_XRGB(0, 0, 255) },
+		{ -3.2f, -1.0f, 11.0f, D3DCOLOR_XRGB(0, 255, 0) },
+		{ -2.0f, 1.0f, 2.0f, D3DCOLOR_XRGB(255, 0, 0) },
 	};
 
 	// create the vertex and store the pointer into v_buffer, which is created globably
 	d3ddev->CreateVertexBuffer(
-		8 * sizeof(CUSTOMVERTEX),
+		10 * sizeof(CUSTOMVERTEX),
 		0,
 		CUSTOMFVF,
 		D3DPOOL_MANAGED,
@@ -188,23 +216,40 @@ void initGraphics()
 	// create the indices using an int array
 	short indices[] =
 	{
-		0, 1, 2,    // side 1
+		// cube
+		//0, 1, 2,    // side 1
+		//2, 1, 3,
+		//4, 0, 6,    // side 2
+		//6, 0, 2,
+		//7, 5, 6,    // side 3
+		//6, 5, 4,
+		//3, 1, 7,    // side 4
+		//7, 1, 5,
+		//4, 5, 0,    // side 5
+		//0, 5, 1,
+		//3, 7, 2,    // side 6
+		//2, 7, 6
+
+		// pyramid
+		//0, 2, 1, // base
+		//1, 2, 3,
+		//0, 1, 4, // sides
+		//1, 3, 4,
+		//3, 2, 4,
+		//2, 0, 4
+
+		// model ship thing
+		0, 1, 2,	// body
 		2, 1, 3,
-		4, 0, 6,    // side 2
-		6, 0, 2,
-		7, 5, 6,    // side 3
-		6, 5, 4,
-		3, 1, 7,    // side 4
-		7, 1, 5,
-		4, 5, 0,    // side 5
-		0, 5, 1,
-		3, 7, 2,    // side 6
-		2, 7, 6
+		3, 1, 0,
+		0, 2, 3,
+		4, 5, 6,	// wings
+		7, 8, 9
 	};
 
 	// create an index buffer
 	d3ddev->CreateIndexBuffer(
-		36 * sizeof(short),
+		18 * sizeof(short),
 		0,
 		D3DFMT_INDEX16,
 		D3DPOOL_MANAGED,
@@ -268,7 +313,9 @@ void render_frame()
 	d3ddev->SetIndices(i_buffer);
 
 	// Drawing the cube
-	d3ddev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 8, 0, 12);
+	d3ddev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 10, 0, 6);
+
+	////// Drawing flat triangles //////
 
 	//D3DXMATRIX matTranslateA;	// A matrix to store the translation for triangle A
 	//D3DXMATRIX matTranslateB;	// A matrix to store the translation for triangle B
