@@ -1,1 +1,3 @@
-A simple project learning the basics of DirectX and drawing to the screen
+Simple project using DirectX to render and draw 3D models to the screen.
+
+![Alt Text](https://i.imgur.com/QcnDGV5.giff)
