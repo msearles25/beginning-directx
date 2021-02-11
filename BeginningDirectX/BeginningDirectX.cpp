@@ -17,6 +17,7 @@
 LPDIRECT3D9 d3d;			// the pointer to our Direct3d interface
 LPDIRECT3DDEVICE9 d3ddev;	// The pointer to the device class
 LPDIRECT3DVERTEXBUFFER9 v_buffer = NULL; // the pointer to the vertex buffer
+LPDIRECT3DINDEXBUFFER9 i_buffer = NULL; // the pointer to the index buffer
 
 // function prototypes
 void initD3d(HWND hWnd);// sets up and intializes Direct3D
@@ -159,14 +160,15 @@ void initGraphics()
 	// create three vertices using the CUSTOMVERTEX struct
 	CUSTOMVERTEX vertices[] =
 	{
-		{2.5f, -3.0f, 0.0f, D3DCOLOR_XRGB(0, 0, 255) },
-		{0.0f, 3.0f, 0.0f, D3DCOLOR_XRGB(0, 255, 0) },
-		{-2.5f, -3.0f, 0.0f, D3DCOLOR_XRGB(255, 0, 0) },
+		{-3.0f, 3.0f, 0.0f, D3DCOLOR_XRGB(0, 0, 255) },
+		{3.0f, 3.0f, 0.0f, D3DCOLOR_XRGB(0, 255, 0) },
+		{-3.0f, -3.0f, 0.0f, D3DCOLOR_XRGB(255, 0, 0) },
+		{3.0f, -3.0f, 0.0f, D3DCOLOR_XRGB(0, 255, 255) },
 	};
 
 	// create the vertex and store the pointer into v_buffer, which is created globably
 	d3ddev->CreateVertexBuffer(
-		3 * sizeof(CUSTOMVERTEX),
+		4 * sizeof(CUSTOMVERTEX),
 		0,
 		CUSTOMFVF,
 		D3DPOOL_MANAGED,
@@ -178,6 +180,37 @@ void initGraphics()
 	v_buffer->Lock(0, 0, (void**)&pVoid, 0); // lock the vertex buffer
 	memcpy(pVoid, vertices, sizeof(vertices)); // copy the vertices into the locked buffer
 	v_buffer->Unlock();
+
+	// create the indices using an int array
+	short indices[] =
+	{
+		0, 1, 2,    // side 1
+		2, 1, 3,
+		4, 0, 6,    // side 2
+		6, 0, 2,
+		7, 5, 6,    // side 3
+		6, 5, 4,
+		3, 1, 7,    // side 4
+		7, 1, 5,
+		4, 5, 0,    // side 5
+		0, 5, 1,
+		3, 7, 2,    // side 6
+		2, 7, 6
+	};
+
+	// create an index buffer
+	d3ddev->CreateIndexBuffer(
+		36 * sizeof(short),
+		0,
+		D3DFMT_INDEX16,
+		D3DPOOL_MANAGED,
+		&i_buffer,
+		NULL);
+
+	// lock the i_buffer and load the indices into it
+	i_buffer->Lock(0, 0, (void**)&pVoid, 0);
+	memcpy(pVoid, indices, sizeof(indices));
+	i_buffer->Unlock();
 }
 
 void render_frame()
@@ -192,16 +225,6 @@ void render_frame()
 	d3ddev->SetFVF(CUSTOMFVF);
 
 	// SET UP THE PIPELINE
-
-	// Rotation
-	//D3DXMATRIX matRotateY;		// a matrix to store the rotation information
-
-	//static float index = 0.0f; index += 0.05f;	// an ever-increasing float
-
-	//// build a matrix to rotate the model by the index variable number in radians
-	//D3DXMatrixRotationY(&matRotateY, index);
-
-	//d3ddev->SetTransform(D3DTS_WORLD, &matRotateY); // tell Direct3D about the matrix
 
 	// View
 	D3DXMATRIX matView;			// the view transform matrix
@@ -246,7 +269,7 @@ void render_frame()
 	// tell Direct3D about each world transform and then draw another triangle
 	D3DXMATRIX triangleA = (matTranslateA * matRotateY);
 	d3ddev->SetTransform(D3DTS_WORLD, &triangleA);
-	d3ddev->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 1);
+	d3ddev->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 2);
 
 	D3DXMATRIX triangleB = (matTranslateB * matRotateY);
 	d3ddev->SetTransform(D3DTS_WORLD, &triangleB);
