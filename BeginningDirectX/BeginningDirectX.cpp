@@ -1,5 +1,17 @@
 #include <Windows.h>
 #include <windowsx.h>
+#include <d3d9.h>
+
+#pragma comment (lib, "d3d9.lib")
+
+// global declarations
+LPDIRECT3D9 d3d;			// the pointer to our Direct3d interface
+LPDIRECT3DDEVICE9 d3ddev;	// The pointer to the device class
+
+// function prototypes
+void initD3d(HWND hWnd);	// sets up and intializes Direct3D
+void render_frame();	// renders a single frame
+void clean3D();			// closes Direct3Dand releases the memory
 
 // WindProc function prototype
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -85,4 +97,25 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 
 	// handle any messages the switch statement didn't
 	return DefWindowProc(hWnd, message, wParam, lParam);
+}
+
+// this funciton will initialize and prepare Direct3D for use
+void initD3d(HWND hWnd)
+{
+	d3d = Direct3DCreate9(D3D_SDK_VERSION);		// Create the Direct3D interface
+	D3DPRESENT_PARAMETERS d3dpp;				// Create a struct to hold various device informaton
+
+	ZeroMemory(&d3dpp, sizeof(d3dpp));			// Clear out the struct for use
+	d3dpp.Windowed = TRUE;						// Prorgram windowed, not fullscreen
+	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;	// Discard old frames
+	d3dpp.hDeviceWindow = hWnd;					// se the window to be used by Direct3D
+
+	// create a device class using the information above 
+	d3d->CreateDevice(
+		D3DADAPTER_DEFAULT,
+		D3DDEVTYPE_HAL,
+		hWnd,
+		D3DCREATE_SOFTWARE_VERTEXPROCESSING,
+		&d3dpp,
+		&d3ddev);
 }
