@@ -160,15 +160,19 @@ void initGraphics()
 	// create three vertices using the CUSTOMVERTEX struct
 	CUSTOMVERTEX vertices[] =
 	{
-		{-3.0f, 3.0f, 0.0f, D3DCOLOR_XRGB(0, 0, 255) },
-		{3.0f, 3.0f, 0.0f, D3DCOLOR_XRGB(0, 255, 0) },
-		{-3.0f, -3.0f, 0.0f, D3DCOLOR_XRGB(255, 0, 0) },
-		{3.0f, -3.0f, 0.0f, D3DCOLOR_XRGB(0, 255, 255) },
+		{ -3.0f, 3.0f, -3.0f, D3DCOLOR_XRGB(0, 0, 255), },
+		{ 3.0f, 3.0f, -3.0f, D3DCOLOR_XRGB(0, 255, 0), },
+		{ -3.0f, -3.0f, -3.0f, D3DCOLOR_XRGB(255, 0, 0), },
+		{ 3.0f, -3.0f, -3.0f, D3DCOLOR_XRGB(0, 255, 255), },
+		{ -3.0f, 3.0f, 3.0f, D3DCOLOR_XRGB(0, 0, 255), },
+		{ 3.0f, 3.0f, 3.0f, D3DCOLOR_XRGB(255, 0, 0), },
+		{ -3.0f, -3.0f, 3.0f, D3DCOLOR_XRGB(0, 255, 0), },
+		{ 3.0f, -3.0f, 3.0f, D3DCOLOR_XRGB(0, 255, 255), }
 	};
 
 	// create the vertex and store the pointer into v_buffer, which is created globably
 	d3ddev->CreateVertexBuffer(
-		4 * sizeof(CUSTOMVERTEX),
+		8 * sizeof(CUSTOMVERTEX),
 		0,
 		CUSTOMFVF,
 		D3DPOOL_MANAGED,
@@ -229,15 +233,15 @@ void render_frame()
 	// View
 	D3DXMATRIX matView;			// the view transform matrix
 
-	D3DXVECTOR3 firstVec(0.0f, 0.0f, 10.0f);
+	D3DXVECTOR3 firstVec(0.0f, 10.0f, 25.0f);
 	D3DXVECTOR3 secondtVec(0, 0, 0);
 	D3DXVECTOR3 thirdVec(0, 1.0f, 0);
 
 	D3DXMatrixLookAtLH(
 		&matView,
-		&firstVec,	// the camera position
-		&secondtVec ,					// the look-at position
-		&thirdVec );				// the up direction
+		&firstVec,		// the camera position
+		&secondtVec ,	// the look-at position
+		&thirdVec );	// the up direction
 	d3ddev->SetTransform(D3DTS_VIEW, &matView); // set the view transform to matView
 
 	// Projection
@@ -251,29 +255,39 @@ void render_frame()
 		100.0f);									// the far view-plane
 	d3ddev->SetTransform(D3DTS_PROJECTION, &matProjection);	// set the projection transform
 
+	// world transform
+	static float index = 0.0f; index += 0.03f;
+	D3DXMATRIX matRotateY;
+	D3DXMatrixRotationY(&matRotateY, index); // rotation matrix
+	d3ddev->SetTransform(D3DTS_WORLD, &(matRotateY)); // set world transform
+
 	// copy the vertex buffer to the back buffer
 
 	// select the vertex buffer to display
 	d3ddev->SetStreamSource(0, v_buffer, 0, sizeof(CUSTOMVERTEX));
+	d3ddev->SetIndices(i_buffer);
 
-	D3DXMATRIX matTranslateA;	// A matrix to store the translation for triangle A
-	D3DXMATRIX matTranslateB;	// A matrix to store the translation for triangle B
-	D3DXMATRIX matRotateY;		// a matrix to store the rotation for each triangle
-	static float index = 0.0f; index += 0.01f;	// an ever-increasing float
+	// Drawing the cube
+	d3ddev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 8, 0, 12);
 
-	// build multiple matrices to translate the model and just one to rotate
-	D3DXMatrixTranslation(&matTranslateA, 0.0f, 0.0f, 2.0f);
-	D3DXMatrixTranslation(&matTranslateB, 0.0f, 0.0f, -2.0f);
-	D3DXMatrixRotationY(&matRotateY, index);	// front side
+	//D3DXMATRIX matTranslateA;	// A matrix to store the translation for triangle A
+	//D3DXMATRIX matTranslateB;	// A matrix to store the translation for triangle B
+	//D3DXMATRIX matRotateY;		// a matrix to store the rotation for each triangle
+	//static float index = 0.0f; index += 0.01f;	// an ever-increasing float
 
-	// tell Direct3D about each world transform and then draw another triangle
-	D3DXMATRIX triangleA = (matTranslateA * matRotateY);
-	d3ddev->SetTransform(D3DTS_WORLD, &triangleA);
-	d3ddev->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 2);
+	//// build multiple matrices to translate the model and just one to rotate
+	//D3DXMatrixTranslation(&matTranslateA, 0.0f, 0.0f, 2.0f);
+	//D3DXMatrixTranslation(&matTranslateB, 0.0f, 0.0f, -2.0f);
+	//D3DXMatrixRotationY(&matRotateY, index);	// front side
 
-	D3DXMATRIX triangleB = (matTranslateB * matRotateY);
-	d3ddev->SetTransform(D3DTS_WORLD, &triangleB);
-	d3ddev->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 1);
+	//// tell Direct3D about each world transform and then draw another triangle
+	//D3DXMATRIX triangleA = (matTranslateA * matRotateY);
+	//d3ddev->SetTransform(D3DTS_WORLD, &triangleA);
+	//d3ddev->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 2);
+
+	//D3DXMATRIX triangleB = (matTranslateB * matRotateY);
+	//d3ddev->SetTransform(D3DTS_WORLD, &triangleB);
+	//d3ddev->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 1);
 
 	d3ddev->EndScene();		// ends the 3D scene
 
