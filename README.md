@@ -1,0 +1,1 @@
+A simple project learning the basics of DirectX and drawing to the screen

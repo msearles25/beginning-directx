@@ -1,15 +1,17 @@
 #include <Windows.h>
 #include <windowsx.h>
 #include <d3d9.h>
+#include <d3dx9.h>
 
 #pragma comment (lib, "d3d9.lib")
+#pragma comment (lib, "d3dx9.lib")
 
 // defining the screen resolution
 #define SCREEN_WIDTH  800
 #define SCREEN_HEIGHT 640
 
 // FVF codes (Flexible Vertex Format)
-#define CUSTOMFVF (D3DFVF_XYZRHW | D3DFVF_DIFFUSE)
+#define CUSTOMFVF (D3DFVF_XYZ | D3DFVF_DIFFUSE) // for 3d space, we removed the RHW
 
 // global declarations
 LPDIRECT3D9 d3d;			// the pointer to our Direct3d interface
@@ -25,8 +27,8 @@ void initGraphics();	// 3d declarations
 // VERTEX struct
 struct CUSTOMVERTEX
 {
-	float x, y, z, rhw;	// from the D3DFVF_XYZRHW
-	DWORD color;		// from the D3DFVF_DIFFUSE
+	float x, y, z;	// from the D3DFVF_XYZ (removed RHW)
+	DWORD color;	// from the D3DFVF_DIFFUSE
 };
 
 // WindProc function prototype
@@ -146,6 +148,7 @@ void initD3d(HWND hWnd)
 		&d3ddev);
 	
 	initGraphics(); // call the function to initilize the triangle
+	d3ddev->SetRenderState(D3DRS_LIGHTING, FALSE);		// turn off the 3D lighting (no lighting code, so nothing would show up if it was on)
 }
 
 void initGraphics()
@@ -153,9 +156,9 @@ void initGraphics()
 	// create three vertices using the CUSTOMVERTEX struct
 	CUSTOMVERTEX vertices[] =
 	{
-		{400.0f, 100.0f, 0.5f, 1.0f, D3DCOLOR_XRGB(0, 0, 255) },
-		{600.0f, 500.0f, 0.5f, 1.0f, D3DCOLOR_XRGB(0, 255, 0) },
-		{200.0f, 500.0f, 0.5f, 1.0f, D3DCOLOR_XRGB(255, 0, 0) },
+		{2.5f, -3.0f, 0.0f, D3DCOLOR_XRGB(0, 0, 255) },
+		{0.0f, 3.0f, 0.0f, D3DCOLOR_XRGB(0, 255, 0) },
+		{-2.5f, -3.0f, 0.0f, D3DCOLOR_XRGB(255, 0, 0) },
 	};
 
 	// create the vertex and store the pointer into v_buffer, which is created globably
@@ -172,7 +175,6 @@ void initGraphics()
 	v_buffer->Lock(0, 0, (void**)&pVoid, 0); // lock the vertex buffer
 	memcpy(pVoid, vertices, sizeof(vertices)); // copy the vertices into the locked buffer
 	v_buffer->Unlock();
-
 }
 
 void render_frame()
@@ -182,15 +184,70 @@ void render_frame()
 
 	d3ddev->BeginScene();	// Begins the 3D scene
 
-	// do 3d rendering on the back buffer
-	
 	// select which vertex format we are using
 	d3ddev->SetFVF(CUSTOMFVF);
+
+	// SET UP THE PIPELINE
+
+	// Rotation
+	D3DXMATRIX matRotateY;		// a matrix to store the rotation information
+
+	static float index = 0.0f; index += 0.05f;	// an ever-increasing float
+
+	// build a matrix to rotate the model by the index variable number in radians
+	D3DXMatrixRotationY(&matRotateY, index);
+
+	d3ddev->SetTransform(D3DTS_WORLD, &matRotateY); // tell Direct3D about the matrix
+
+	// View
+	D3DXMATRIX matView;			// the view transform matrix
+
+	D3DXVECTOR3 firstVec(0.0f, 0.0f, 10.0f);
+	D3DXVECTOR3 secondtVec(0, 0, 0);
+	D3DXVECTOR3 thirdVec(0, 1.0f, 0);
+
+	D3DXMatrixLookAtLH(
+		&matView,
+		&firstVec,	// the camera position
+		&secondtVec ,					// the look-at position
+		&thirdVec );				// the up direction
+
+	d3ddev->SetTransform(D3DTS_VIEW, &matView); // set the view transform to matView
+
+	// Projection
+	D3DXMATRIX matProjection;	// the projection transorm matrix
+
+	D3DXMatrixPerspectiveFovLH(
+		&matProjection,
+		D3DXToRadian(45),							// the horizontal field of view
+		(FLOAT)SCREEN_WIDTH / (FLOAT)SCREEN_HEIGHT, // aspect ratio
+		1.0f,										// the near view-plane
+		100.0f);									// the far view-plane
+
+	d3ddev->SetTransform(D3DTS_PROJECTION, &matProjection);	// set the projection transform
+
+	//D3DXMATRIX matTranslate;	// a matrix to store the translation information
+	//D3DXMATRIX matScale;		// a matrix to store the scaling information
+
+	// Build a matrix to move the model 12 units along the x-axis and 4 units along the y-axis
+	// store it in the matTranslate
+	//D3DXMatrixTranslation(&matTranslate, 12.0f, 4.0f, 0.0f);
+
+
+	//// build a matrix to double the size of the model
+	//// store it in matScale
+	//D3DXMatrixScaling(&matScale, 2.0f, 2.0f, 2.0f );
+
+
+	//// tell Direct3D about our matrix
+	//d3ddev->SetTransform(D3DTS_WORLD, &matTranslate);
+	//d3ddev->SetTransform(D3DTS_WORLD, &matScale);
+
+	// copy the vertex buffer to the back buffer
 
 	// select the vertex buffer to display
 	d3ddev->SetStreamSource(0, v_buffer, 0, sizeof(CUSTOMVERTEX));
 
-	// copy the vertex buffer to the back buffer
 	d3ddev->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 1);
 
 	d3ddev->EndScene();		// ends the 3D scene
