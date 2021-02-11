@@ -4,6 +4,10 @@
 
 #pragma comment (lib, "d3d9.lib")
 
+// defining the screen resolution
+#define SCREEN_WIDTH  800
+#define SCREEN_HEIGHT 600
+
 // global declarations
 LPDIRECT3D9 d3d;			// the pointer to our Direct3d interface
 LPDIRECT3DDEVICE9 d3ddev;	// The pointer to the device class
@@ -33,7 +37,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	wc.lpfnWndProc = WindowProc;
 	wc.hInstance = hInstance;
 	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
+	//wc.hbrBackground = (HBRUSH)COLOR_WINDOW; leave the background color untouched with this commented out
 	wc.lpszClassName = L"WindowClass1";
 
 	// Register the window class
@@ -44,8 +48,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		NULL,
 		L"WindowClass1",
 		L"First Windowed Program",	// Title of the window
-		WS_OVERLAPPEDWINDOW,		// window style
-		300, 300, 500, 400,			// x, y, width, height
+		WS_EX_TOPMOST | WS_POPUP,	// fullscreen values
+		0, 0,						// starting x, y should be 0
+		SCREEN_WIDTH, SCREEN_HEIGHT,// width, height
 		NULL, NULL,					// no parent Window and not using menus
 		hInstance,					// application handle
 		NULL);						// used with multiple windows
@@ -53,8 +58,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	// display the window to the screen
 	ShowWindow(hWnd, nCmdShow);
 
-	// enter the main loop of the program
+	initD3d(hWnd);
 
+	// enter the main loop of the program
 	// This struct holds Windows event messages
 	MSG msg;
 
@@ -73,7 +79,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 		if (msg.message == WM_QUIT)
 			break;
+
+		render_frame();
 	}
+
+	clean3D();
 
 	return msg.wParam;
 }
@@ -106,9 +116,12 @@ void initD3d(HWND hWnd)
 	D3DPRESENT_PARAMETERS d3dpp;				// Create a struct to hold various device informaton
 
 	ZeroMemory(&d3dpp, sizeof(d3dpp));			// Clear out the struct for use
-	d3dpp.Windowed = TRUE;						// Prorgram windowed, not fullscreen
+	d3dpp.Windowed = FALSE;						// Prorgram fullscreen, not windowed
 	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;	// Discard old frames
 	d3dpp.hDeviceWindow = hWnd;					// se the window to be used by Direct3D
+	d3dpp.BackBufferFormat = D3DFMT_X8R8G8B8;	// set teh back buffer format to 32-bit
+	d3dpp.BackBufferWidth = SCREEN_WIDTH;		// set the width of the buffer
+	d3dpp.BackBufferHeight = SCREEN_HEIGHT;		// set the height of the buffer
 
 	// create a device class using the information above 
 	d3d->CreateDevice(
@@ -131,7 +144,7 @@ void render_frame()
 
 	d3ddev->EndScene();		// ends the 3D scene
 
-	d3ddev->Present(NULL, NULL, NULL);	// Displays the created frame
+	d3ddev->Present(NULL, NULL, NULL, NULL);	// Displays the created frame
 }
 
 void clean3D()
