@@ -133,3 +133,9 @@ void render_frame()
 
 	d3ddev->Present(NULL, NULL, NULL);	// Displays the created frame
 }
+
+void clean3D()
+{
+	d3ddev->Release();	// close and release the 3D devices
+	d3d->Release();		// close and release Direct3D
+}
