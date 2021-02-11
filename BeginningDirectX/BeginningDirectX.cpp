@@ -6,19 +6,33 @@
 
 // defining the screen resolution
 #define SCREEN_WIDTH  800
-#define SCREEN_HEIGHT 600
+#define SCREEN_HEIGHT 640
+
+// FVF codes (Flexible Vertex Format)
+#define CUSTOMFVF (D3DFVF_XYZRHW | D3DFVF_DIFFUSE)
 
 // global declarations
 LPDIRECT3D9 d3d;			// the pointer to our Direct3d interface
 LPDIRECT3DDEVICE9 d3ddev;	// The pointer to the device class
+LPDIRECT3DVERTEXBUFFER9 v_buffer = NULL; // the pointer to the vertex buffer
 
 // function prototypes
-void initD3d(HWND hWnd);	// sets up and intializes Direct3D
+void initD3d(HWND hWnd);// sets up and intializes Direct3D
 void render_frame();	// renders a single frame
 void clean3D();			// closes Direct3Dand releases the memory
+void initGraphics();	// 3d declarations
+
+// VERTEX struct
+struct CUSTOMVERTEX
+{
+	float x, y, z, rhw;	// from the D3DFVF_XYZRHW
+	DWORD color;		// from the D3DFVF_DIFFUSE
+};
 
 // WindProc function prototype
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
+
 
 // the entry point for any Windows program
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
@@ -48,7 +62,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		NULL,
 		L"WindowClass1",
 		L"First Windowed Program",	// Title of the window
-		WS_EX_TOPMOST | WS_POPUP,	// fullscreen values
+		WS_OVERLAPPEDWINDOW,		// windowed mode
 		0, 0,						// starting x, y should be 0
 		SCREEN_WIDTH, SCREEN_HEIGHT,// width, height
 		NULL, NULL,					// no parent Window and not using menus
@@ -116,7 +130,7 @@ void initD3d(HWND hWnd)
 	D3DPRESENT_PARAMETERS d3dpp;				// Create a struct to hold various device informaton
 
 	ZeroMemory(&d3dpp, sizeof(d3dpp));			// Clear out the struct for use
-	d3dpp.Windowed = FALSE;						// Prorgram fullscreen, not windowed
+	d3dpp.Windowed = TRUE;						// windowed mode
 	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;	// Discard old frames
 	d3dpp.hDeviceWindow = hWnd;					// se the window to be used by Direct3D
 	d3dpp.BackBufferFormat = D3DFMT_X8R8G8B8;	// set teh back buffer format to 32-bit
@@ -131,6 +145,33 @@ void initD3d(HWND hWnd)
 		D3DCREATE_SOFTWARE_VERTEXPROCESSING,
 		&d3dpp,
 		&d3ddev);
+}
+
+void initGraphics()
+{
+	// create three vertices using the CUSTOMVERTEX struct
+	CUSTOMVERTEX vertices[] =
+	{
+		{320.0f, 50.0f, 0.5f, 1.0f, D3DCOLOR_XRGB(0, 0, 255) },
+		{520.0f, 4000.0f, 0.5f, 1.0f, D3DCOLOR_XRGB(0, 255, 0) },
+		{120.0f, 40.0f, 0.5f, 1.0f, D3DCOLOR_XRGB(255, 0, 0) },
+	};
+
+	// create the vertex and store the pointer into v_buffer, which is created globably
+	d3ddev->CreateVertexBuffer(
+		3 * sizeof(CUSTOMVERTEX),
+		0,
+		CUSTOMFVF,
+		D3DPOOL_MANAGED,
+		&v_buffer,
+		NULL);
+
+	VOID* pVoid; // the void poiner
+
+	v_buffer->Lock(0, 0, (void**)&pVoid, 0); // lock the vertex buffer
+	memcpy(pVoid, vertices, sizeof(vertices)); // copy the vertices into the locked buffer
+	v_buffer->Unlock();
+
 }
 
 void render_frame()
