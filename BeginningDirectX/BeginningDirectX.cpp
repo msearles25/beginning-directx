@@ -137,6 +137,8 @@ void initD3d(HWND hWnd)
 	d3dpp.BackBufferFormat = D3DFMT_X8R8G8B8;	// set teh back buffer format to 32-bit
 	d3dpp.BackBufferWidth = SCREEN_WIDTH;		// set the width of the buffer
 	d3dpp.BackBufferHeight = SCREEN_HEIGHT;		// set the height of the buffer
+	d3dpp.EnableAutoDepthStencil = TRUE;
+	d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
 
 	// create a device class using the information above 
 	d3d->CreateDevice(
@@ -148,7 +150,8 @@ void initD3d(HWND hWnd)
 		&d3ddev);
 	
 	initGraphics(); // call the function to initilize the triangle
-	d3ddev->SetRenderState(D3DRS_LIGHTING, FALSE);		// turn off the 3D lighting (no lighting code, so nothing would show up if it was on)
+	d3ddev->SetRenderState(D3DRS_LIGHTING, FALSE);	// turn off the 3D lighting (no lighting code, so nothing would show up if it was on)
+	d3ddev->SetRenderState(D3DRS_ZENABLE, TRUE);	// enable the z-buffer
 }
 
 void initGraphics()
@@ -181,6 +184,7 @@ void render_frame()
 {
 	// Clear the window to a a deep blue color
 	d3ddev->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
+	d3ddev->Clear(0, NULL, D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
 
 	d3ddev->BeginScene();	// Begins the 3D scene
 
@@ -190,14 +194,14 @@ void render_frame()
 	// SET UP THE PIPELINE
 
 	// Rotation
-	D3DXMATRIX matRotateY;		// a matrix to store the rotation information
+	//D3DXMATRIX matRotateY;		// a matrix to store the rotation information
 
-	static float index = 0.0f; index += 0.05f;	// an ever-increasing float
+	//static float index = 0.0f; index += 0.05f;	// an ever-increasing float
 
-	// build a matrix to rotate the model by the index variable number in radians
-	D3DXMatrixRotationY(&matRotateY, index);
+	//// build a matrix to rotate the model by the index variable number in radians
+	//D3DXMatrixRotationY(&matRotateY, index);
 
-	d3ddev->SetTransform(D3DTS_WORLD, &matRotateY); // tell Direct3D about the matrix
+	//d3ddev->SetTransform(D3DTS_WORLD, &matRotateY); // tell Direct3D about the matrix
 
 	// View
 	D3DXMATRIX matView;			// the view transform matrix
@@ -211,7 +215,6 @@ void render_frame()
 		&firstVec,	// the camera position
 		&secondtVec ,					// the look-at position
 		&thirdVec );				// the up direction
-
 	d3ddev->SetTransform(D3DTS_VIEW, &matView); // set the view transform to matView
 
 	// Projection
@@ -223,31 +226,30 @@ void render_frame()
 		(FLOAT)SCREEN_WIDTH / (FLOAT)SCREEN_HEIGHT, // aspect ratio
 		1.0f,										// the near view-plane
 		100.0f);									// the far view-plane
-
 	d3ddev->SetTransform(D3DTS_PROJECTION, &matProjection);	// set the projection transform
-
-	//D3DXMATRIX matTranslate;	// a matrix to store the translation information
-	//D3DXMATRIX matScale;		// a matrix to store the scaling information
-
-	// Build a matrix to move the model 12 units along the x-axis and 4 units along the y-axis
-	// store it in the matTranslate
-	//D3DXMatrixTranslation(&matTranslate, 12.0f, 4.0f, 0.0f);
-
-
-	//// build a matrix to double the size of the model
-	//// store it in matScale
-	//D3DXMatrixScaling(&matScale, 2.0f, 2.0f, 2.0f );
-
-
-	//// tell Direct3D about our matrix
-	//d3ddev->SetTransform(D3DTS_WORLD, &matTranslate);
-	//d3ddev->SetTransform(D3DTS_WORLD, &matScale);
 
 	// copy the vertex buffer to the back buffer
 
 	// select the vertex buffer to display
 	d3ddev->SetStreamSource(0, v_buffer, 0, sizeof(CUSTOMVERTEX));
 
+	D3DXMATRIX matTranslateA;	// A matrix to store the translation for triangle A
+	D3DXMATRIX matTranslateB;	// A matrix to store the translation for triangle B
+	D3DXMATRIX matRotateY;		// a matrix to store the rotation for each triangle
+	static float index = 0.0f; index += 0.01f;	// an ever-increasing float
+
+	// build multiple matrices to translate the model and just one to rotate
+	D3DXMatrixTranslation(&matTranslateA, 0.0f, 0.0f, 2.0f);
+	D3DXMatrixTranslation(&matTranslateB, 0.0f, 0.0f, -2.0f);
+	D3DXMatrixRotationY(&matRotateY, index);	// front side
+
+	// tell Direct3D about each world transform and then draw another triangle
+	D3DXMATRIX triangleA = (matTranslateA * matRotateY);
+	d3ddev->SetTransform(D3DTS_WORLD, &triangleA);
+	d3ddev->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 1);
+
+	D3DXMATRIX triangleB = (matTranslateB * matRotateY);
+	d3ddev->SetTransform(D3DTS_WORLD, &triangleB);
 	d3ddev->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 1);
 
 	d3ddev->EndScene();		// ends the 3D scene
