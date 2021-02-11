@@ -32,7 +32,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		NULL,
 		L"WindowClass1",
 		L"First Windowed Program",	// Title of the window
-		WS_EX_OVERLAPPEDWINDOW,		// window style
+		WS_OVERLAPPEDWINDOW,		// window style
 		300, 300, 500, 400,			// x, y, width, height
 		NULL, NULL,					// no parent Window and not using menus
 		hInstance,					// application handle
