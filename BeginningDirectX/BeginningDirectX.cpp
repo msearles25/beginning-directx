@@ -119,3 +119,17 @@ void initD3d(HWND hWnd)
 		&d3dpp,
 		&d3ddev);
 }
+
+void render_frame()
+{
+	// Clear the window to a a deep blue color
+	d3ddev->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 40, 100), 1.0f, 0);
+
+	d3ddev->BeginScene();	// Begins the 3D scene
+
+	// do 3d rendering on the back buffer
+
+	d3ddev->EndScene();		// ends the 3D scene
+
+	d3ddev->Present(NULL, NULL, NULL);	// Displays the created frame
+}
