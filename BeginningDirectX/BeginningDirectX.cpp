@@ -73,7 +73,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	ShowWindow(hWnd, nCmdShow);
 
 	initD3d(hWnd);
-
 	// enter the main loop of the program
 	// This struct holds Windows event messages
 	MSG msg;
@@ -145,6 +144,8 @@ void initD3d(HWND hWnd)
 		D3DCREATE_SOFTWARE_VERTEXPROCESSING,
 		&d3dpp,
 		&d3ddev);
+	
+	initGraphics(); // call the function to initilize the triangle
 }
 
 void initGraphics()
@@ -152,9 +153,9 @@ void initGraphics()
 	// create three vertices using the CUSTOMVERTEX struct
 	CUSTOMVERTEX vertices[] =
 	{
-		{320.0f, 50.0f, 0.5f, 1.0f, D3DCOLOR_XRGB(0, 0, 255) },
-		{520.0f, 4000.0f, 0.5f, 1.0f, D3DCOLOR_XRGB(0, 255, 0) },
-		{120.0f, 40.0f, 0.5f, 1.0f, D3DCOLOR_XRGB(255, 0, 0) },
+		{400.0f, 100.0f, 0.5f, 1.0f, D3DCOLOR_XRGB(0, 0, 255) },
+		{600.0f, 500.0f, 0.5f, 1.0f, D3DCOLOR_XRGB(0, 255, 0) },
+		{200.0f, 500.0f, 0.5f, 1.0f, D3DCOLOR_XRGB(255, 0, 0) },
 	};
 
 	// create the vertex and store the pointer into v_buffer, which is created globably
@@ -177,11 +178,20 @@ void initGraphics()
 void render_frame()
 {
 	// Clear the window to a a deep blue color
-	d3ddev->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 40, 100), 1.0f, 0);
+	d3ddev->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
 
 	d3ddev->BeginScene();	// Begins the 3D scene
 
 	// do 3d rendering on the back buffer
+	
+	// select which vertex format we are using
+	d3ddev->SetFVF(CUSTOMFVF);
+
+	// select the vertex buffer to display
+	d3ddev->SetStreamSource(0, v_buffer, 0, sizeof(CUSTOMVERTEX));
+
+	// copy the vertex buffer to the back buffer
+	d3ddev->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 1);
 
 	d3ddev->EndScene();		// ends the 3D scene
 
@@ -190,6 +200,7 @@ void render_frame()
 
 void clean3D()
 {
+	v_buffer->Release(); // close and release the vertex buffer
 	d3ddev->Release();	// close and release the 3D devices
 	d3d->Release();		// close and release Direct3D
 }
